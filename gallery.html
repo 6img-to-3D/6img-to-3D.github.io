@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Few-view Reconstruction of Large-Scale Scenes from Outward-Looking Cameras">
+    <meta name="keywords" content="3D,CV, NeRF">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>6Img-to-3D</title>
+
+    <!-- Global site tag (gtag.js) - Google Analytics
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script> -->
+
+    <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+    <link rel="stylesheet" href="./static/css/bulma.min.css">
+    <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+    <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+    <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+    <link rel="stylesheet" href="./static/css/index.css">
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/images/icon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/images/icon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/images/icon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/images/icon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/images/icon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/images/icon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/images/icon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/images/icon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/icon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/icon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/images/icon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/icon/favicon-16x16.png">
+    <link rel="manifest" href="/static/images/icon/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <script src="./static/js/video-comparison.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script defer src="./static/js/fontawesome.all.min.js"></script>
+    <script src="./static/js/bulma-carousel.min.js"></script>
+    <script src="./static/js/bulma-slider.min.js"></script>
+    <script src="./static/js/index.js"></script>
+</head>
+
+<body>
+
+    <!-- <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div class="navbar-menu">
+      <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+        <a class="navbar-item" href="https://keunhong.com">
+          <span class="icon">
+            <i class="fas fa-home"></i>
+          </span>
+        </a>
+
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">
+            More Research
+          </a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="https://hypernerf.github.io">
+              HyperNeRF
+            </a>
+            <a class="navbar-item" href="https://nerfies.github.io">
+              Nerfies
+            </a>
+            <a class="navbar-item" href="https://latentfusion.github.io">
+              LatentFusion
+            </a>
+            <a class="navbar-item" href="https://photoshape.github.io">
+              PhotoShape
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </nav> -->
+
+
+
+
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container is-max-desktop">
+                <div class="columns is-centered">
+                    <div class="column has-text-centered">
+                        <h1 class="title is-1 publication-title"><a href="index.html">6Img-to-3D</a></h1>
+                        <div class="is-size-5 publication-authors">
+                            <span class="author-block">
+                                <a href="mailto:an.on@an.on"></a><sup>1</sup>,</span>
+                        </div>
+
+                        <!-- <div class="is-size-5 publication-authors">
+              <span class="author-block"><sup>1</sup>u0,</span>
+              <span class="author-block"><sup>2</sup>u1</span>
+            </div> -->
+
+                        <div class="column has-text-centered">
+                            <div class="publication-links">
+                                <!-- PDF Link. -->
+                                <!-- <span class="link-block">
+                  <a href="https://arxiv.org/pdf/2011.12948" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                    </span>
+                    <span>Paper</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/2011.12948" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv</span>
+                  </a>
+                </span> -->
+                                <!-- Video Link. -->
+                                <span class="link-block">
+                                    <a href="https://www.youtube.com/@6Img-to-3D"
+                                        class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="fab fa-youtube"></i>
+                                        </span>
+                                        <span>Video</span>
+                                    </a>
+                                </span>
+                                <!-- Code Link. -->
+                                <span class="link-block">
+                                    <a href="https://github.com/6img-to-3D/6img-to-3D"
+                                        class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="fab fa-github"></i>
+                                        </span>
+                                        <span>Code</span>
+                                    </a>
+                                </span>
+                                <!-- Dataset Link. -->
+                                <!-- <span class="link-block">
+                  <a href="https://github.com/google/nerfies/releases/tag/0.1"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="far fa-images"></i>
+                    </span>
+                    <span>Data</span>
+                  </a> -->
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+
+    <section class="hero teaser">
+        <div class="row">
+            <div class="column-4 has-text-centered">
+                <div class="content-container">
+                    <p>
+                        <span class="dnerf">PixelNeRF</span>
+                    </p>
+                    <div class="video-compare-container">
+                        <video class="video" id="mesh0" loop autoplay muted
+                            src="./static/videos/comp/pixelnerf_ring/2.mp4" onplay="resizeAndPlay(this)"></video>
+                        <canvas class="videoMerge" id="mesh0Merge"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column-4 has-text-centered">
+                <div class="content-container">
+                    <p>
+                        <span class="dnerf">6Img-to-3D without Project Image Features</span>
+                    </p>
+                    <div class="video-compare-container">
+                        <video class="video" id="mesh1" loop autoplay muted
+                            src="./static/videos/comp/nopixel_ring/3.mp4" onplay="resizeAndPlay(this)"></video>
+                        <canvas class="videoMerge" id="mesh1Merge"></canvas>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="column-4 has-text-centered">
+                <div class="content-container">
+                    <p>
+                        <span class="dnerf">6Img-to-3D</span>
+                    </p>
+                    <div class="video-compare-container">
+                        <video class="video" id="mesh3" loop autoplay muted src="./static/videos/comp/full_ring/3.mp4"
+                            onplay="resizeAndPlay(this)"></video>
+                        <canvas class="videoMerge" id="mesh3Merge"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column-4 has-text-centered">
+                <div class="content-container">
+                    <p>
+                        <span class="dnerf">6Img-to-3D with SwinFIR Upscaler</span>
+                    </p>
+                    <div class="video-compare-container">
+                        <video class="video" id="mesh2" loop autoplay muted
+                            src="./static/videos/comp/swinfir_ring/3.mp4" onplay="resizeAndPlay(this)"></video>
+                        <canvas class="videoMerge" id="mesh2Merge"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+
+    <section class="hero teaser">
+        <div class="row">
+            <div class="column-4 has-text-centered">
+                <div class="content-container">
+                    <p>
+                        <span class="dnerf">PixelNeRF</span>
+                    </p>
+                    <div class="video-compare-container">
+                        <video class="video" id="mesh8" loop autoplay muted
+                            src="./static/videos/comp/pixelnerf_ring/1.mp4" onplay="resizeAndPlay(this)"></video>
+                        <canvas class="videoMerge" id="mesh8Merge"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column-4 has-text-centered">
+                <div class="content-container">
+                    <p>
+                        <span class="dnerf">6Img-to-3D without Project Image Features</span>
+                    </p>
+                    <div class="video-compare-container">
+                        <video class="video" id="mesh5" loop autoplay muted
+                            src="./static/videos/comp/nopixel_ring/2.mp4" onplay="resizeAndPlay(this)"></video>
+                        <canvas class="videoMerge" id="mesh5Merge"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column-4 has-text-centered">
+                <div class="content-container">
+                    <p>
+                        <span class="dnerf">6Img-to-3D</span>
+                    </p>
+                    <div class="video-compare-container">
+                        <video class="video" id="mesh7" loop autoplay muted src="./static/videos/comp/full_ring/2.mp4"
+                            onplay="resizeAndPlay(this)"></video>
+                        <canvas class="videoMerge" id="mesh7Merge"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column-4 has-text-centered">
+                <div class="content-container">
+                    <p>
+                        <span class="dnerf">6Img-to-3D with SwinFIR Upscaler</span>
+                    </p>
+                    <div class="video-compare-container">
+                        <video class="video" id="mesh6" loop autoplay muted
+                            src="./static/videos/comp/swinfir_ring/2.mp4" onplay="resizeAndPlay(this)"></video>
+                        <canvas class="videoMerge" id="mesh6Merge"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container is-max-desktop">
+            <div class="columns is-centered has-text-centered">
+                <div class="column is-four-fifths">
+                    <h2 class="title is-3">6Img-to-3D Driving Demo</h2>
+                    <div class="content has-text-justified">
+
+                        <div class="publication-video">
+                            <iframe src="https://www.youtube.com/embed/CL0R82zmAkM?loop=1&rel=0&amp;showinfo=0"
+                                frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-four-fifths">
+                    <h2 class="title is-3">6Img-to-3D Zero-Shot on NuScenes</h2>
+                    <div class="content has-text-justified">
+
+                        <div class="publication-video">
+                            <iframe src="https://www.youtube.com/embed/QSYPRGsunFE?loop=1&rel=0&amp;showinfo=0"
+                                frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+
+
+
+
+
+
+
+
+
+
+    <section class="section">
+
+        <div class="container is-max-desktop">
+
+            <div class="columns is-centered">
+                <div class="column is four-fifths">
+                    <table class="town-table">
+                        <colgroup>
+                            <col width="1.5cm">
+                            <col>
+                            <col>
+                            <col>
+                            <col>
+                            <col>
+                            <col>
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Town</th>
+                                <th colspan="3" style="text-align: center;">Input</th>
+                                <th colspan="3" style="text-align: center;">Supervision</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="rotation-cell" rowspan="2">Town 1</td>
+                                <td><img src="figures/t1/n/2_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t1/n/0_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t1/n/1_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t1/s/1_rgb.png" alt="supervision image" class="supervision-image">
+                                </td>
+                                <td><img src="figures/t1/s/13_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t1/s/15_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                            </tr>
+                            <tr class="border">
+                                <td><img src="figures/t1/n/4_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t1/n/3_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t1/n/5_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t1/s/21_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t1/s/3_rgb.png" alt="supervision image" class="supervision-image">
+                                </td>
+                                <td><img src="figures/t1/s/5_rgb.png" alt="supervision image" class="supervision-image">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="rotation-cell" rowspan="2">Town 2</td>
+                                <td><img src="figures/t2/n/2_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t2/n/0_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t2/n/1_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t2/s/17_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t2/s/32_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t2/s/77_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                            </tr>
+                            <tr class="border">
+                                <td><img src="figures/t2/n/4_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t2/n/3_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t2/n/5_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t2/s/81_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t2/s/84_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t2/s/99_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                            </tr>
+                            <tr>
+                                <td class="rotation-cell" rowspan="2">Town 3</td>
+                                <td><img src="figures/t3/n/2_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t3/n/0_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t3/n/1_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t3/s/17_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t3/s/32_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t3/s/77_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                            </tr>
+                            <tr class="border">
+                                <td><img src="figures/t3/n/4_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t3/n/3_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t3/n/5_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t3/s/81_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t3/s/84_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t3/s/99_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                            </tr>
+                            <tr>
+                                <td class="rotation-cell" rowspan="2">Town 4</td>
+                                <td><img src="figures/t4/n/2_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t4/n/0_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t4/n/1_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t4/s/12_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t4/s/20_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t4/s/3_rgb.png" alt="supervision image" class="supervision-image">
+                                </td>
+                            </tr>
+                            <tr class="border">
+                                <td><img src="figures/t4/n/4_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t4/n/3_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t4/n/5_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t4/s/43_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t4/s/5_rgb.png" alt="supervision image" class="supervision-image">
+                                </td>
+                                <td><img src="figures/t4/s/95_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                            </tr>
+                            <tr>
+                                <td class="rotation-cell" rowspan="2">Town 5</td>
+                                <td><img src="figures/t5/n/2_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t5/n/0_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t5/n/1_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t5/s/12_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t5/s/14_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t5/s/45_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                            </tr>
+                            <tr class="border">
+                                <td><img src="figures/t5/n/4_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t5/n/3_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t5/n/5_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t5/s/49_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t5/s/52_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t5/s/7_rgb.png" alt="supervision image" class="supervision-image">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="rotation-cell" rowspan="2">Town 6</td>
+                                <td><img src="figures/t6/n/2_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t6/n/0_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t6/n/1_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t6/s/30_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t6/s/55_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t6/s/56_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                            </tr>
+                            <tr class="border">
+                                <td><img src="figures/t6/n/4_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t6/n/3_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t6/n/5_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t6/s/30_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t6/s/55_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t6/s/56_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                            </tr>
+                            <tr>
+                                <td class="rotation-cell" rowspan="2">Town 7</td>
+                                <td><img src="figures/t7/n/2_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t7/n/0_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t7/n/1_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t7/s/16_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t7/s/21_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t7/s/31_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                            </tr>
+                            <tr class="border">
+                                <td><img src="figures/t7/n/4_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t7/n/3_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t7/n/5_rgb.png" alt="input image" class="input-image"></td>
+                                <td><img src="figures/t7/s/73_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t7/s/74_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                                <td><img src="figures/t7/s/77_rgb.png" alt="supervision image"
+                                        class="supervision-image"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+
+        </div>
+
+
+
+        </div>
+    </section>
+
+
+
+    <section class="section" id="BibTeX">
+        <div class="container is-max-desktop content">
+            <h2 class="title">BibTeX</h2>
+            <pre><code>@article{
+}</code></pre>
+        </div>
+    </section>
+
+
+    <footer class="footer">
+        <div class="container">
+            <div class="content has-text-centered">
+                <a class="icon-link" href="./static/videos/nerfies_paper.pdf">
+                    <i class="fas fa-file-pdf"></i>
+                </a>
+                <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
+                    <i class="fab fa-github"></i>
+                </a>
+            </div>
+            <div class="columns is-centered">
+                <div class="column is-8">
+                    <div class="content">
+                        <p>
+                            This website is licensed under a <a rel="license"
+                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+                                Commons Attribution-ShareAlike 4.0 International License</a>.
+                        </p>
+                        <p>
+                            This means you are free to borrow the <a
+                                href="https://github.com/nerfies/nerfies.github.io">source
+                                code</a> of this website,
+                            we just ask that you link back to this page in the footer.
+                            Please remember to remove the analytics code included in the header of the website which
+                            you do not want on your website.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

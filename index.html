@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Few-view Reconstruction of Large-Scale Scenes from Outward-Looking Cameras">
+  <meta name="keywords" content="3D,CV, NeRF">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>6Img-to-3D</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script> -->
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="apple-touch-icon" sizes="57x57" href="/static/images/icon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/static/images/icon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/static/images/icon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/static/images/icon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/static/images/icon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/static/images/icon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/static/images/icon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/static/images/icon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/images/icon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/images/icon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/static/images/icon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/images/icon/favicon-16x16.png">
+  <link rel="manifest" href="/static/images/icon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <script src="./static/js/video-comparison.js"></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+
+<body>
+
+  <!-- <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div class="navbar-menu">
+      <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+        <a class="navbar-item" href="https://keunhong.com">
+          <span class="icon">
+            <i class="fas fa-home"></i>
+          </span>
+        </a>
+
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">
+            More Research
+          </a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="https://hypernerf.github.io">
+              HyperNeRF
+            </a>
+            <a class="navbar-item" href="https://nerfies.github.io">
+              Nerfies
+            </a>
+            <a class="navbar-item" href="https://latentfusion.github.io">
+              LatentFusion
+            </a>
+            <a class="navbar-item" href="https://photoshape.github.io">
+              PhotoShape
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </nav> -->
+
+
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title"><a href="index.html">6Img-to-3D</a></h1>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href=https://github.com/tgieruc">Théo Gieruc*</a><sup>1,2</sup></span>
+                <a href="marius.cx">Marius Kaestingschaefer</a><sup>1</sup></span>
+            </div>
+
+            <!-- <div class="is-size-5 publication-authors">
+              <span class="author-block"><sup>1</sup>u0,</span>
+              <span class="author-block"><sup>2</sup>u1</span>
+            </div> -->
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- Video Link. -->
+                <span class="link-block">
+                  <a href="https://www.youtube.com/@6Img-to-3D"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                    </span>
+                    <span>Video</span>
+                  </a>
+                </span>
+                <!-- Code Link. -->
+                <span class="link-block">
+                  <a href="https://github.com/6img-to-3D/6img-to-3D"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <section>
+    <div class="container is-max-desktop">
+        <div class="columns is-centered has-text-centered">
+            <div class="column is-four-fifths">
+                <h2 class="title is-3">6Img-to-3D Driving Demo</h2>
+                <div class="content has-text-justified">
+
+                    <div class="publication-video">
+                        <iframe src="https://www.youtube.com/embed/dLJRgjtmlYU?loop=1&rel=0&amp;showinfo=0"
+                            frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-four-fifths">
+                <h2 class="title is-3">6Img-to-3D Zero-Shot on NuScenes</h2>
+                <div class="content has-text-justified">
+
+                    <div class="publication-video">
+                        <iframe src="https://www.youtube.com/embed/jEBOjDZbqw0?loop=1&rel=0&amp;showinfo=0"
+                            frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <!-- Abstract. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              We propose 6Img-to-3D, a transformer-based encoder-renderer method. 6Img-to-3D generates
+              3D-consistent multi-view images for large-scale unbounded outdoor driving scenarios from only six
+              input
+              images. Existing approaches require detailed pose information and cannot reconstruct occluded regions
+              faithfully. We take a step towards resolving these shortcomings by combining cross- and self-attention
+              mechanisms for triplane parameterization with differentiable volume rendering. We showcase that six
+              surround-view vehicle cameras without absolute pose information are enough to reconstruct 360° scenes
+              during inference time.
+            </p>
+          </div>
+        </div>
+      </div>
+      <!--/ Abstract. -->
+
+
+    </div>
+  </section>
+
+
+  
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Method</h2>
+          <div class="content has-text-justified">
+            <p>
+              The pixel-aligned image features from the six outward-looking images are indivually extracted using a
+              pre-trained ResNet-101 followed by a Feature Pyramidal Network (FPN). The features are then projected
+              into
+              a triplane using deformable attention. The renderer is a shallow MLP, which takes the triplane latent
+              3D
+              features concatenated to the corresponding 2D image features, obtained by projecting the 3D
+              coordinates
+              into the 2D image space. The renderer outputs the color and opacity of the 3D features. The color and
+              opacity are then used to render the 3D features into the 2D image space, using volumetric rendering.
+              The
+              rendered 2D images are then used to compute the loss, which is backpropagated through the entire
+              network.
+              The entire network is trained end-to-end.
+            </p>
+            <p>
+              In order to further improve the quality of the rendered images and speed up the inference, the images
+              are
+              rendered at a lower resolution and then upsampled using SwinFIR.
+            </p>
+
+          </div>
+
+        </div>
+      </div>
+      <div class="column is-full-width">
+        <img src="./static/images/method_6Img-to-3D_v3.drawio.png" alt="Image description"
+          style="width: 100%; height: auto;">
+      </div>
+
+
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Results</h2>
+
+          <div class="content has-text-justified">
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>PSNR <span style="vertical-align: super;">↑</span></th>
+                  <th>SSIM <span style="vertical-align: super;">↑</span></th>
+                  <th>LPIPS <span style="vertical-align: super;">↓</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>PixelNeRF</td>
+                  <td>15.263</td>
+                  <td>0.695</td>
+                  <td>0.673</td>
+                </tr>
+                <tr>
+                  <td>w/o Scene Contraction</td>
+                  <td>17.493</td>
+                  <td>0.726</td>
+                  <td>0.479</td>
+                </tr>
+                <tr>
+                  <td>w/o LPIPS Loss</td>
+                  <td>X</td>
+                  <td>Y</td>
+                  <td>Z</td>
+                </tr>
+                <tr>
+                  <td>w/o Image Feature Proj.</td>
+                  <td>18.440</td>
+                  <td>0.726</td>
+                  <td>0.488</td>
+                </tr>
+                <tr>
+                  <td>w SwinFIR Upscaler</td> 
+                  <td>19.188</td>
+                  <td>0.746</td>
+                  <td>0.444</td>
+                </tr>
+                <tr>
+                  <td>w Inference Time Optimization</td>
+                  <td>X</td>
+                  <td>Y</td>
+                  <td>Z</td>
+                </tr>
+                <tr>
+                  <td>6Img-to-3D (Ours)</td>
+                  <td>18.864</td>
+                  <td>0.733</td>
+                  <td>0.453</td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
+        </div>
+      </div>
+
+     
+      <!--/ Concurrent Work. -->
+    </div>
+
+
+
+    </div>
+  </section>
+
+
+
+  <section class="section">
+
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Inward-Outward Dataset</h2>
+          <div class="content has-text-justified">
+            <p>
+              Suitable dataset for the task of reconstructing scenes from outward-looking cameras onboard of a
+              vehicle
+              does not exist. We fill this gap by introducing our own Inward-Outward synthetic dataset, composed of
+              1900
+              training and 100 validation scenes, each containing six outward-facing and 100
+              inward-facing cameras. The outward-facing cameras follow the NuScenes setup. The dataset is generated
+              using the <a href="https://carla.org//">CARLA
+                Simulator</a>. 3D bounding boxes for all vehicles are provided, as well as the semantic and instance
+              segmentation masks and the depth maps. The dataset is available for download <a href="todo">here</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-centered  has-text-centered">
+        <div class="column is-full-width">
+          <img src="./static/images/composition.png" alt="Image description"
+            style="width: 50%; height: auto; float: center;">
+        </div>
+      </div>
+      <div class="column has-text-centered">
+        <div class="column is four-fifths">
+          <span class="dnerf">The dataset provides RGB, depth maps, semantic and instance segmentation for each
+            image.<br>
+            Furthermore, the 3D bounding boxes of each vehicle in the scene is also available</span>
+        </div>
+      </div>
+
+
+      <div class="columns is-centered">
+        <!-- Visual Effects. -->
+        <div class="column">
+
+          <div class="content">
+            <div class="video-compare-container">
+              <video class="video" id="dataset1" loop autoplay muted src="./static/videos/dataset/bbox_sem.mp4"
+                onplay="resizeAndPlay(this)"></video>
+              <canvas height="0" class="videoMerge" id="dataset1Merge"></canvas>
+            </div>
+          </div>
+        </div>
+        <!--/ Visual Effects. -->
+
+        <!-- Matting. -->
+        <div class="column">
+          <div class="columns is-centered">
+            <div class="column content">
+              <div class="video-compare-container">
+                <video class="video" id="dataset2" loop autoplay muted src="./static/videos/dataset/inst_depth.mp4"
+                  onplay="resizeAndPlay(this)"></video>
+                <canvas height="0" class="videoMerge" id="dataset2Merge"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-centered has-text-justified">
+        <div class="column is-four-fifths">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Town</th>
+                <th>Number of Scenes</th>
+                <th>Split</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Town01</td>
+                <td>255</td>
+                <td>Train</td>
+                <td>A small, simple town with a river and several bridges.</td>
+              </tr>
+              <tr>
+                <td>Town03</td>
+                <td>265</td>
+                <td>Train</td>
+                <td>A larger, urban map with a roundabout and large junctions.</td>
+              </tr>
+              <tr>
+                <td>Town04</td>
+                <td>372</td>
+                <td>Train</td>
+                <td>A small town embedded in the mountains with a special "figure of 8" infinite highway.</td>
+              </tr>
+              <tr>
+                <td>Town05</td>
+                <td>302</td>
+                <td>Train</td>
+                <td>Squared-grid town with cross junctions and a bridge. It has multiple lanes per direction. Useful
+                  to
+                  perform lane changes.</td>
+              </tr>
+              <tr>
+                <td>Town06</td>
+                <td>436</td>
+                <td>Train</td>
+                <td>Long many lane highways with many highway entrances and exits. It also has a Michigan left.</td>
+              </tr>
+              <tr>
+                <td>Town07</td>
+                <td>116</td>
+                <td>Train</td>
+                <td>A rural environment with narrow roads, corn, barns and hardly any traffic lights.</td>
+              </tr>
+              <tr>
+                <td>Town10</td>
+                <td>155</td>
+                <td>Train</td>
+                <td>A downtown urban environment with skyscrapers, residential buildings and an ocean promenade.
+                </td>
+              </tr>
+              <tr>
+                <td>Town02</td>
+                <td>101</td>
+                <td>Val</td>
+                <td>A small simple town with a mixture of residential and commercial buildings.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3"><a href="gallery.html">Gallery</a></h2>
+
+          <div class="content has-text-justified">
+
+          </div>
+        </div>
+      </div>
+
+  </section>
+
+
+  <section class="hero teaser">
+    <div class="row">
+
+      <div class="column-2 has-text-centered">
+        <div class="content-container">
+          <p>
+            <span class="dnerf">PixelNeRF</span>
+          </p>
+          <div class="video-compare-container">
+            <video class="video" id="mesh0" loop autoplay muted src="./static/videos/comp/pixelnerf_ring/2.mp4"
+              onplay="resizeAndPlay(this)"></video>
+            <canvas class="videoMerge" id="mesh0Merge"></canvas>
+          </div>
+        </div>
+      </div>
+  
+
+  
+  
+      <div class="column-2 has-text-centered">
+        <div class="content-container">
+          <p>
+            <span class="dnerf">6Img-to-3D</span>
+          </p>
+          <div class="video-compare-container">
+            <video class="video" id="mesh3" loop autoplay muted src="./static/videos/comp/full_ring/3.mp4"
+              onplay="resizeAndPlay(this)"></video>
+            <canvas class="videoMerge" id="mesh3Merge"></canvas>
+          </div>
+        </div>
+      </div>
+  
+
+    </div>
+  
+
+    <div class="row">
+      <div class="column-2 has-text-centered">
+        <div class="content-container">
+          <p>
+            <span class="dnerf">PixelNeRF</span>
+          </p>
+          <div class="video-compare-container">
+            <video class="video" id="mesh8" loop autoplay muted src="./static/videos/comp/pixelnerf_ring/1.mp4"
+              onplay="resizeAndPlay(this)"></video>
+            <canvas class="videoMerge" id="mesh8Merge"></canvas>
+          </div>
+        </div>
+      </div>
+  
+
+  
+      <div class="column-2 has-text-centered">
+        <div class="content-container">
+          <p>
+            <span class="dnerf">6Img-to-3D</span>
+          </p>
+          <div class="video-compare-container">
+            <video class="video" id="mesh7" loop autoplay muted src="./static/videos/comp/full_ring/2.mp4"
+              onplay="resizeAndPlay(this)"></video>
+            <canvas class="videoMerge" id="mesh7Merge"></canvas>
+          </div>
+        </div>
+      </div>
+  
+
+    </div>
+  </section>
+  
+  <section>
+    <div class="container is-max-desktop">
+
+
+  <div class="columns is-centered">
+    <div class="column is four-fifths">
+      <table class="town-table">
+        <colgroup>
+          <col width="1.5cm">
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Town</th>
+            <th colspan="3" style="text-align: center;">Input</th>
+            <th colspan="3" style="text-align: center;">Supervision</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="rotation-cell" rowspan="2">Town 1</td>
+            <td><img src="figures/t1/n/2_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t1/n/0_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t1/n/1_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t1/s/1_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t1/s/13_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t1/s/15_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr class="border">
+            <td><img src="figures/t1/n/4_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t1/n/3_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t1/n/5_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t1/s/21_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t1/s/3_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t1/s/5_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr>
+            <td class="rotation-cell" rowspan="2">Town 2</td>
+            <td><img src="figures/t2/n/2_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t2/n/0_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t2/n/1_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t2/s/17_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t2/s/32_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t2/s/77_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr class="border">
+            <td><img src="figures/t2/n/4_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t2/n/3_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t2/n/5_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t2/s/81_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t2/s/84_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t2/s/99_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr>
+            <td class="rotation-cell" rowspan="2">Town 3</td>
+            <td><img src="figures/t3/n/2_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t3/n/0_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t3/n/1_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t3/s/17_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t3/s/32_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t3/s/77_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr class="border">
+            <td><img src="figures/t3/n/4_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t3/n/3_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t3/n/5_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t3/s/81_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t3/s/84_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t3/s/99_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr>
+            <td class="rotation-cell" rowspan="2">Town 4</td>
+            <td><img src="figures/t4/n/2_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t4/n/0_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t4/n/1_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t4/s/12_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t4/s/20_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t4/s/3_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr class="border">
+            <td><img src="figures/t4/n/4_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t4/n/3_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t4/n/5_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t4/s/43_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t4/s/5_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t4/s/95_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr>
+            <td class="rotation-cell" rowspan="2">Town 5</td>
+            <td><img src="figures/t5/n/2_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t5/n/0_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t5/n/1_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t5/s/12_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t5/s/14_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t5/s/45_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr class="border">
+            <td><img src="figures/t5/n/4_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t5/n/3_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t5/n/5_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t5/s/49_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t5/s/52_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t5/s/7_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr>
+            <td class="rotation-cell" rowspan="2">Town 6</td>
+            <td><img src="figures/t6/n/2_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t6/n/0_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t6/n/1_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t6/s/30_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t6/s/55_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t6/s/56_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr class="border">
+            <td><img src="figures/t6/n/4_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t6/n/3_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t6/n/5_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t6/s/30_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t6/s/55_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t6/s/56_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr>
+            <td class="rotation-cell" rowspan="2">Town 7</td>
+            <td><img src="figures/t7/n/2_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t7/n/0_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t7/n/1_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t7/s/16_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t7/s/21_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t7/s/31_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+          <tr class="border">
+            <td><img src="figures/t7/n/4_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t7/n/3_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t7/n/5_rgb.png" alt="input image" class="input-image"></td>
+            <td><img src="figures/t7/s/73_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t7/s/74_rgb.png" alt="supervision image" class="supervision-image"></td>
+            <td><img src="figures/t7/s/77_rgb.png" alt="supervision image" class="supervision-image"></td>
+          </tr>
+        </tbody>
+      </table>
+
+
+    </div>
+  </div>
+  </section>
+
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>@article{
+}</code></pre>
+    </div>
+  </section>
+
+
+  <footer class="footer">
+    <div class="container">
+      <div class="content has-text-centered">
+        <a class="icon-link" href="./static/videos/nerfies_paper.pdf">
+          <i class="fas fa-file-pdf"></i>
+        </a>
+        <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
+          <i class="fab fa-github"></i>
+        </a>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              This website is licensed under a <a rel="license"
+                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+                Commons Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+            <p>
+              This means you are free to borrow the <a href="https://github.com/nerfies/nerfies.github.io">source
+                code</a> of this website,
+              we just ask that you link back to this page in the footer.
+              Please remember to remove the analytics code included in the header of the website which
+              you do not want on your website.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>
+
+
+
